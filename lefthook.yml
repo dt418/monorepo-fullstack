@@ -1,0 +1,27 @@
+# Lefthook Git Hooks Configuration
+# https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: '*.{ts,tsx}'
+      run: pnpm lint
+    format:
+      glob: '*.{ts,tsx,md,json}'
+      run: pnpm format:check
+    typecheck:
+      run: pnpm typecheck
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1}
+
+pre-push:
+  parallel: true
+  commands:
+    build:
+      run: pnpm build
+    test:
+      run: pnpm test --if-present

@@ -1,0 +1,21 @@
+# ESLint Ignore
+node_modules
+dist
+.next
+coverage
+*.config.js
+*.config.cjs
+*.config.mjs
+vitest.config.ts
+vitest.workspace.ts
+
+# Generated files
+packages/db/prisma/migrations
+packages/db/prisma/*.ts
+
+# Build outputs
+apps/web/dist
+apps/api/dist
+
+# Turbo
+.turbo
