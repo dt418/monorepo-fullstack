@@ -94,6 +94,8 @@
 
   // Spell Checker
   "cSpell.words": [
+    "addgroup",
+    "adduser",
     "Buildx",
     "commitlint",
     "healthcheck",

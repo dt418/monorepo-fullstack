@@ -22,7 +22,7 @@ COPY apps/api ./apps/api
 RUN pnpm install --frozen-lockfile
 
 # Generate Prisma client
-RUN pnpm --filter @myorg/api db:generate
+RUN pnpm --filter @myorg/db db:generate
 
 # Build packages and api
 RUN pnpm --filter @myorg/api build
