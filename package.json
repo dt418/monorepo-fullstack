@@ -19,7 +19,8 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:build": "docker-compose build",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "postinstall": "pnpm db:generate"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",

@@ -14,7 +14,7 @@ jobs:
   lint-and-test:
     name: Lint, Type Check & Test
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: pnpm --filter @myorg/api db:generate
+        run: pnpm --filter @myorg/db db:generate
 
       - name: Type check
         run: pnpm typecheck
@@ -49,7 +49,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: lint-and-test
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: pnpm --filter @myorg/api db:generate
+        run: pnpm --filter @myorg/db db:generate
 
       - name: Build all packages
         run: pnpm build
@@ -88,11 +88,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     permissions:
       contents: read
       packages: write
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
