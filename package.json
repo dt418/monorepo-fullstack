@@ -19,7 +19,7 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:build": "docker-compose build",
-    "prepare": "lefthook install",
+    "prepare": "node -e \"if (!process.env.CI && !process.env.DOCKER_BUILD) try { require('child_process').spawnSync('lefthook', ['install'], { stdio: 'inherit' }) } catch (e) {}\"",
     "postinstall": "pnpm db:generate"
   },
   "devDependencies": {
