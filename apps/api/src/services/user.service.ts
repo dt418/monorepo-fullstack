@@ -77,7 +77,7 @@ export class UserService {
     ]);
 
     return {
-      users: users.map((u) => this.sanitizeUser(u)),
+      users: users.map((u: PrismaUser) => this.sanitizeUser(u)),
       total,
     };
   }

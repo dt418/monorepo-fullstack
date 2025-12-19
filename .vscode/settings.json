@@ -94,18 +94,20 @@
 
   // Spell Checker
   "cSpell.words": [
-    "myorg",
+    "commitlint",
+    "healthcheck",
     "hono",
+    "isready",
+    "lefthook",
+    "myorg",
+    "orpc",
+    "pnpm",
+    "Prisma",
+    "tailwindcss",
+    "tanstack",
     "tsup",
     "tsyringe",
-    "orpc",
-    "Prisma",
     "turbo",
-    "turborepo",
-    "pnpm",
-    "tanstack",
-    "tailwindcss",
-    "commitlint",
-    "lefthook"
+    "turborepo"
   ]
 }
