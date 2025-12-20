@@ -5,7 +5,7 @@ Production-ready full-stack monorepo with Turborepo, React, Node.js, oRPC, Prism
 ## 🚀 Quick Start
 
 ```bash
-# Clone and install
+# Clone and install (Automated Prisma client generation)
 pnpm install
 
 # Setup environment
@@ -13,7 +13,7 @@ cp .env.example .env
 # Edit .env with your values
 
 # Start databases (requires Docker)
-docker-compose up -d postgres redis
+pnpm docker:up
 
 # Run database migrations
 pnpm db:migrate
@@ -40,41 +40,43 @@ Open:
 │   └── web/          # Frontend (Vite + React + React Query)
 ├── packages/
 │   ├── types/        # Shared TypeScript types & Zod schemas
-│   ├── orpc/         # oRPC contracts with ArkType
+│   ├── db/           # Shared Database layer (Prisma)
 │   ├── utils/        # Shared utilities (env, logger)
 │   └── ui/           # Shared UI components (shadcn)
 ├── docker-compose.yml
 ├── turbo.json
-└── pnpm-workspace.yaml
+├── pnpm-workspace.yaml
+└── .github/workflows # CI/CD configurations
 ```
 
 ## 🛠️ Technology Stack
 
-| Layer         | Technology                                       |
-| ------------- | ------------------------------------------------ |
-| **Monorepo**  | Turborepo + pnpm workspaces                      |
-| **Frontend**  | Vite, React 18, TypeScript, React Query, Zustand |
-| **UI**        | Tailwind CSS, shadcn/ui, Radix UI                |
-| **Backend**   | Node.js, Hono, TypeScript                        |
-| **RPC**       | oRPC (type-safe), ArkType validation             |
-| **Database**  | PostgreSQL, Prisma ORM                           |
-| **Cache**     | Redis (caching, rate limiting, sessions)         |
-| **Auth**      | JWT, bcrypt, role-based access                   |
-| **Realtime**  | WebSocket with Redis pub/sub                     |
-| **Container** | Docker, Docker Compose                           |
-| **CI/CD**     | GitHub Actions                                   |
+| Layer            | Technology                                       |
+| ---------------- | ------------------------------------------------ |
+| **Monorepo**     | Turborepo + pnpm workspaces                      |
+| **Frontend**     | Vite, React 18, TypeScript, React Query, Zustand |
+| **UI**           | Tailwind CSS, shadcn/ui, Radix UI                |
+| **Backend**      | Node.js, Hono, TypeScript                        |
+| **RPC**          | oRPC (type-safe), ArkType validation             |
+| **Database**     | PostgreSQL, Prisma ORM                           |
+| **Cache**        | Redis (caching, rate limiting, sessions)         |
+| **Auth**         | JWT, bcrypt, role-based access                   |
+| **Realtime**     | WebSocket with Redis pub/sub                     |
+| **Container**    | Docker, Docker Compose                           |
+| **CI/CD**        | GitHub Actions (Standardized Pipeline)           |
+| **Code Quality** | ESLint, Prettier, Commitlint, Lefthook           |
 
 ## 📦 Available Scripts
 
 ```bash
 # Development
 pnpm dev           # Start all apps in dev mode
-pnpm build         # Build all packages and apps
+pnpm build         # Build all packages and apps (with automated Prisma generation)
 pnpm lint          # Run linting
 pnpm typecheck     # Type checking
 
 # Database
-pnpm db:generate   # Generate Prisma client
+pnpm db:generate   # Generate Prisma client (triggered automatically on install)
 pnpm db:migrate    # Run migrations
 pnpm db:seed       # Seed database
 pnpm db:studio     # Open Prisma Studio
@@ -82,7 +84,7 @@ pnpm db:studio     # Open Prisma Studio
 # Docker
 pnpm docker:up     # Start all containers
 pnpm docker:down   # Stop all containers
-pnpm docker:build  # Build Docker images
+pnpm docker:build  # Build production Docker images
 ```
 
 ## 🔐 Authentication
@@ -132,16 +134,36 @@ Default seeded users:
 
 ## 🐳 Docker Deployment
 
-```bash
-# Full stack
-docker-compose up -d
+The project uses multi-stage Docker builds for optimized production images.
 
-# Or build and run
-docker-compose up -d --build
+```bash
+# Build and run with Docker Compose
+pnpm docker:build
+pnpm docker:up
 
 # View logs
 docker-compose logs -f api
 ```
+
+## ⚙️ CI/CD & Commit Standards
+
+### GitHub Actions
+
+The pipeline (`.github/workflows/ci.yml`) automatically:
+
+- Installs dependencies with cached pnpm.
+- Generates Prisma client types.
+- Runs type-checking across the monorepo.
+- Executes linting.
+- Builds production Docker images on push to `main`.
+
+### Commit Conventions
+
+We use `@commitlint/config-conventional` with relaxed rules for subjects:
+
+- **Type**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- **Scope**: Required (e.g., `feat(api): ...`).
+- **Subject**: Automated case validation is disabled to support acronyms and technical terms. Max length increased to 200 characters.
 
 ## 🔄 WebSocket Events
 
