@@ -58,7 +58,7 @@ app.notFound((c) => {
 const httpServer = serve(
   {
     fetch: app.fetch,
-    port: Number(env.PORT),
+    port: Number(env.API_PORT),
   },
   (info) => {
     logger.info(`🚀 Server running on http://${env.HOST}:${info.port}`);

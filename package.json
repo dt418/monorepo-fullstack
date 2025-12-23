@@ -25,7 +25,7 @@
     "docker:db:migrate": "docker-compose run --rm api pnpm --filter @myorg/db db:migrate:deploy",
     "docker:db:seed": "docker-compose run --rm api pnpm --filter @myorg/db db:seed",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up",
-    "docker:dev:build": "docker-compose -f docker-compose.dev.yml up --build -d",
+    "docker:dev:build": "docker-compose -f docker-compose.dev.yml up --build",
     "prepare": "node -e \"if (!process.env.CI && !process.env.DOCKER_BUILD) try { require('child_process').spawnSync('lefthook', ['install'], { stdio: 'inherit' }) } catch (e) {}\""
   },
   "devDependencies": {

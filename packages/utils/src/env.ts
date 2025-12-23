@@ -10,8 +10,13 @@ import { z } from 'zod';
 export const envSchema = z.object({
   // Server
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(3000),
+  API_PORT: z.coerce.number().default(3001),
+  WEB_PORT: z.coerce.number().default(5173),
   HOST: z.string().default('0.0.0.0'),
+
+  // URLs
+  API_URL: z.string().url().default('http://localhost:3001'),
+  WEB_URL: z.string().url().default('http://localhost:5173'),
 
   // Database
   DATABASE_URL: z.string().url(),
