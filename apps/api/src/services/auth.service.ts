@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default-member */
 import { PrismaClient } from '@myorg/db';
 import type { User, LoginInput, RegisterInput, AuthTokens } from '@myorg/types';
 import { getEnv, createLogger } from '@myorg/utils';
