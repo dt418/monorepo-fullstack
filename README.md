@@ -145,6 +145,24 @@ pnpm docker:up
 docker-compose logs -f api
 ```
 
+## 🛠️ Docker Development Environment
+
+We provide a separate, standalone Docker environment for development that includes hot-reloading for both the API and Web applications.
+
+```bash
+# Start the development environment
+pnpm docker:dev
+
+# Rebuild containers (if dependencies change)
+pnpm docker:dev:build
+```
+
+Access services at:
+
+- **Web**: http://localhost:5173
+- **API**: http://localhost:3001
+- **Prisma Studio**: http://localhost:5555
+
 ## ⚙️ CI/CD & Commit Standards
 
 ### GitHub Actions

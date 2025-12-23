@@ -1,6 +1,7 @@
-import React from 'react';
+import type { SelectHTMLAttributes } from 'react';
+import { forwardRef } from 'react';
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   options: { value: string; label: string }[];
@@ -9,7 +10,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 /**
  * Reusable Select component
  */
-export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, className = '', id, ...props }, ref) => {
     const selectId = id || `select-${Math.random().toString(36).slice(2, 9)}`;
 

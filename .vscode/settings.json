@@ -48,7 +48,7 @@
   },
 
   // Prisma
-  "prisma.pinToPrisma6": true,
+  "prisma.pinToPrisma6": false,
 
   // Tailwind CSS
   "tailwindCSS.experimental.classRegex": [

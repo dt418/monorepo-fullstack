@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install system dependencies
+# OpenSSL is required for Prisma
+RUN apk add --no-cache openssl
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
+
+# Copy workspace configuration
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json tsconfig.json ./
+
+# Copy packages and apps (needed for install)
+COPY apps ./apps
+COPY packages ./packages
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# The rest is handled by volume mounts in docker-compose
+# Note: When mounting .:/app, the host's files will hide the installed node_modules
+# UNLESS we also mount /app/node_modules as an anonymous volume (which we do in docker-compose)
+# AND populate it. However, anonymous volumes initialize from the image ONLY if they are created empty.
+# To be safe, we might need to reinstall or generate in the command if volumes are tricky.
+# But better: standard pattern is to use the image's node_modules.

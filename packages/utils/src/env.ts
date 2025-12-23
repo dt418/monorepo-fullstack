@@ -1,3 +1,7 @@
+import { existsSync } from 'fs';
+import { join } from 'path';
+import * as dotenv from 'dotenv';
+import { expand } from 'dotenv-expand';
 import { z } from 'zod';
 
 /**
@@ -58,6 +62,22 @@ let cachedEnv: Env | null = null;
 
 export function getEnv(): Env {
   if (!cachedEnv) {
+    // Load .env from root if it exists
+    const rootEnvPath = join(process.cwd(), '.env');
+    const projectEnvPath = join(process.cwd(), '..', '..', '.env');
+
+    if (existsSync(rootEnvPath)) {
+      const myEnv = dotenv.config({ path: rootEnvPath });
+      expand(myEnv);
+    } else if (existsSync(projectEnvPath)) {
+      const myEnv = dotenv.config({ path: projectEnvPath });
+      expand(myEnv);
+    } else {
+      // Fallback to default dotenv.config() which looks for .env in current dir
+      const myEnv = dotenv.config();
+      expand(myEnv);
+    }
+
     cachedEnv = parseEnv(process.env as Record<string, string>);
   }
   return cachedEnv;

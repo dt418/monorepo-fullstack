@@ -9,20 +9,19 @@ RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 # Copy workspace files
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json turbo.json tsconfig.json ./
 
-# Copy packages
+# Copy packages and apps
 COPY packages ./packages
-
-# Copy api app
-COPY apps/api ./apps/api
+COPY apps ./apps
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Generate Prisma client
-RUN pnpm --filter @myorg/db db:generate
+# Build api and its dependencies using turbo
+# This will automatically run db:generate for @myorg/db
+RUN pnpm dlx turbo run build --filter="@myorg/api..."
 
-# Build packages and api
-RUN pnpm --filter @myorg/api build
+# Deployed standalone version (this flattens the workspace structure)
+RUN pnpm --filter @myorg/api --prod deploy /app/out
 
 # Production stage
 FROM node:20-alpine AS runner
@@ -31,29 +30,27 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install OpenSSL for Prisma query engine
+RUN apk add --no-cache openssl
+
+# Re-enable corepack and pnpm for migration commands
+RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
+
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 api
 
-# Install pnpm for production
-RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
-
-# Copy necessary files
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/api/package.json ./apps/api/
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/node_modules ./node_modules
+# Copy the deployed application from builder
+COPY --from=builder /app/out ./
 
 # Create upload directory
 RUN mkdir -p /app/uploads && chown -R api:nodejs /app/uploads
 
+# Set ownership
+RUN chown -R api:nodejs /app
+
 USER api
 
 EXPOSE 3001
-
-WORKDIR /app/apps/api
 
 CMD ["node", "dist/index.js"]

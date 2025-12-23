@@ -1,0 +1,142 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: myorg-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-myorg}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - myorg-network-dev
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: myorg-redis-dev
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - myorg-network-dev
+
+  # Prisma Studio
+  prisma-studio:
+    build:
+      context: .
+      # Use the dev dockerfile for studio as well to have tools available
+      dockerfile: apps/api/Dockerfile.dev
+    container_name: myorg-prisma-studio-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Connect to the dev postgres instance
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-myorg}
+    ports:
+      - '5555:5555'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/db/node_modules
+    working_dir: /app/packages/db
+    # Run studio using the shared prisma package
+    command: npx prisma studio --browser none --port 5555
+    networks:
+      - myorg-network-dev
+
+  # Backend API Dev
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.dev
+    container_name: myorg-api-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/db/node_modules
+      - /app/packages/utils/node_modules
+      - /app/packages/types/node_modules
+      - /app/apps/api/node_modules
+    command: sh -c "pnpm --filter @myorg/db db:generate && pnpm --filter @myorg/api dev"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      # Connect to dev services by service name 'postgres' and 'redis' defined in this file
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-myorg}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      UPLOAD_DIR: /app/uploads
+    ports:
+      - '${API_PORT:-3001}:3001'
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - myorg-network-dev
+
+  # Frontend Web Dev
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.dev
+    container_name: myorg-web-dev
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/ui/node_modules
+      - /app/packages/utils/node_modules
+      - /app/packages/types/node_modules
+    command: pnpm --filter @myorg/web dev --host
+    environment:
+      API_URL: http://api:3001
+    ports:
+      - '${WEB_PORT_DEV:-5173}:5173'
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:5173']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - myorg-network-dev
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+
+networks:
+  myorg-network-dev:
+    name: myorg-network-dev
