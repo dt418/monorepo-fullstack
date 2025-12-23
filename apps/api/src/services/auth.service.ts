@@ -2,7 +2,7 @@ import { PrismaClient } from '@myorg/db';
 import type { User, LoginInput, RegisterInput, AuthTokens } from '@myorg/types';
 import { getEnv, createLogger } from '@myorg/utils';
 import { compare, hash } from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 import { CacheService, CacheKeys } from '../cache';
@@ -143,7 +143,7 @@ export class AuthService {
    */
   verifyAccessToken(token: string): JwtPayload {
     const env = getEnv();
-    return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    return jwt.verify(token, env.JWT_SECRET as jwt.Secret) as JwtPayload;
   }
 
   /**
@@ -154,9 +154,13 @@ export class AuthService {
 
     const payload: JwtPayload = { userId, email, role };
 
-    const accessToken = jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: env.JWT_ACCESS_EXPIRES_IN,
-    } as jwt.SignOptions);
+    const accessToken = jwt.sign(
+      payload,
+      env.JWT_SECRET as jwt.Secret,
+      {
+        expiresIn: env.JWT_ACCESS_EXPIRES_IN,
+      } as jwt.SignOptions
+    );
 
     const refreshToken = uuid();
     const expiresAt = new Date();
