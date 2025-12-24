@@ -53,7 +53,7 @@ Utility scripts integrated in `package.json`:
 | `postgres`      | 5432 | `postgres:16-alpine` | Main data storage with automatic healthcheck.  |
 | `redis`         | 6379 | `redis:7-alpine`     | Caching and Pub/Sub.                           |
 | `api`           | 3001 | Custom (Node 20)     | Backend server connecting to Postgres & Redis. |
-| `web`           | 3000 | Custom (Nginx)       | Frontend app with proxy to `api` service.      |
+| `web`           | 5173 | Custom (Nginx)       | Frontend app with proxy to `api` service.      |
 | `prisma-studio` | 5555 | Custom (Node 20)     | Visual database browser for Prisma.            |
 
 ---
@@ -85,7 +85,7 @@ Important variables in the `.env` file:
 | `POSTGRES_DB`       | `myorg`    | Initial database name  |
 | `JWT_SECRET`        | (random)   | JWT Secret key         |
 | `API_PORT`          | `3001`     | Backend exported port  |
-| `WEB_PORT`          | `3000`     | Frontend exported port |
+| `WEB_PORT`          | `5173`     | Frontend exported port |
 
 ---
 

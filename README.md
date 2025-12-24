@@ -27,7 +27,7 @@ pnpm dev
 
 Open:
 
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:5173
 - API: http://localhost:3001
 - API Health: http://localhost:3001/healthz
 

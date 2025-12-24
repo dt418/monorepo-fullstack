@@ -85,7 +85,7 @@ Các biến quan trọng cần lưu ý trong file `.env`:
 | `POSTGRES_DB`       | `myorg`      | Tên database khởi tạo    |
 | `JWT_SECRET`        | (ngẫu nhiên) | Khóa bí mật cho JWT      |
 | `API_PORT`          | `3001`       | Port export của Backend  |
-| `WEB_PORT`          | `3000`       | Port export của Frontend |
+| `WEB_PORT`          | `5173`       | Port export của Frontend |
 
 ---
 

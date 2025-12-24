@@ -53,7 +53,7 @@ pnpm docker:up
 | `postgres`      | 5432   | `postgres:16-alpine` | メインデータストレージ。自動ヘルスチェック付き。                     |
 | `redis`         | 6379   | `redis:7-alpine`     | キャッシングおよび Pub/Sub。                                         |
 | `api`           | 3001   | Custom (Node 20)     | バックエンドサーバー。Postgres と Redis に接続。                     |
-| `web`           | 3000   | Custom (Nginx)       | フロントエンドアプリ。`/api` リクエストを `api` サービスへプロキシ。 |
+| `web`           | 5173   | Custom (Nginx)       | フロントエンドアプリ。`/api` リクエストを `api` サービスへプロキシ。 |
 | `prisma-studio` | 5555   | Custom (Node 20)     | Prisma 用のビジュアルデータベースブラウザ。                          |
 
 ---
@@ -85,7 +85,7 @@ pnpm docker:up
 | `POSTGRES_DB`       | `myorg`      | 初期データベース名       |
 | `JWT_SECRET`        | (ランダム)   | JWT 秘密鍵               |
 | `API_PORT`          | `3001`       | バックエンド公開ポート   |
-| `WEB_PORT`          | `3000`       | フロントエンド公開ポート |
+| `WEB_PORT`          | `5173`       | フロントエンド公開ポート |
 
 ---
 
