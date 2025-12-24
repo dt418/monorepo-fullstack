@@ -8,8 +8,8 @@ This document provides guidelines on using Docker and Docker Compose for develop
 
 The project follows a simple Microservices architecture, containerized and managed using Docker Compose.
 
-- **Frontend**: Nginx serving the built React/Next.js application.
-- **Backend**: Node.js API running the NestJS/Express application.
+- **Frontend**: Nginx serving the built React application.
+- **Backend**: Node.js API running the [Hono](https://hono.dev/) application.
 - **Database**: PostgreSQL 16.
 - **Database GUI**: Prisma Studio.
 - **Cache**: Redis 7.

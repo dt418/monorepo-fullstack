@@ -91,11 +91,10 @@ pnpm docker:build  # Build production Docker images
 
 Default seeded users:
 
-| Email             | Password    | Role  |
-| ----------------- | ----------- | ----- |
-| admin@example.com | admin123456 | Admin |
-| john@example.com  | user123456  | User  |
-| jane@example.com  | user123456  | User  |
+| Email             | Password | Role  |
+| ----------------- | -------- | ----- |
+| admin@example.com | admin123 | Admin |
+| user@example.com  | user1234 | User  |
 
 ## 📡 API Endpoints
 

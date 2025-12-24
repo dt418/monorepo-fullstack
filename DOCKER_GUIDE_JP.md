@@ -8,8 +8,8 @@
 
 このプロジェクトは、Docker Compose によってパッケージ化および管理されるシンプルなマイクロサービスアーキテクチャを採用しています。
 
-- **Frontend**: ビルド済みの React/Next.js アプリケーションを提供する Nginx。
-- **Backend**: NestJS/Express アプリケーションを実行する Node.js API。
+- **Frontend**: ビルド済みの React アプリケーションを提供する Nginx。
+- **Backend**: [Hono](https://hono.dev/) アプリケーションを実行する Node.js API。
 - **Database**: PostgreSQL 16。
 - **Database GUI**: Prisma Studio。
 - **Cache**: Redis 7。

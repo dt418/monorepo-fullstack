@@ -8,8 +8,8 @@ Tài liệu này hướng dẫn cách sử dụng Docker và Docker Compose đ�
 
 Dự án sử dụng mô hình Microservices đơn giản, được đóng gói và quản lý bằng Docker Compose.
 
-- **Frontend**: Nginx phục vụ ứng dụng React/Next.js (đã build).
-- **Backend**: Node.js API chạy ứng dụng NestJS/Express.
+- **Frontend**: Nginx phục vụ ứng dụng React (đã build).
+- **Backend**: Node.js API chạy ứng dụng [Hono](https://hono.dev/).
 - **Database**: PostgreSQL 16.
 - **Database GUI**: Prisma Studio.
 - **Cache**: Redis 7.
