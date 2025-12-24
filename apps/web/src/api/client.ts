@@ -120,22 +120,54 @@ class ApiClient {
     return this.request('/files');
   }
 
-  async uploadFile(file: globalThis.File): Promise<FileUploadResponse> {
-    const formData = new FormData();
-    formData.append('file', file);
+  async uploadFile(
+    file: globalThis.File,
+    onProgress?: (progress: number) => void
+  ): Promise<FileUploadResponse> {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const response = await fetch(`${API_BASE}/files/upload`, {
-      method: 'POST',
-      headers: this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {},
-      body: formData,
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${API_BASE}/files/upload`);
+
+      if (this.accessToken) {
+        xhr.setRequestHeader('Authorization', `Bearer ${this.accessToken}`);
+      }
+
+      if (xhr.upload && onProgress) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            onProgress(percentComplete);
+          }
+        };
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch (e) {
+            reject(new Error('Invalid JSON response'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.error || 'Upload failed'));
+          } catch (e) {
+            reject(new Error('Upload failed'));
+          }
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('Network error'));
+      };
+
+      xhr.send(formData);
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-      throw new Error(error.error || 'Upload failed');
-    }
-
-    return response.json();
   }
 
   async deleteFile(id: string): Promise<void> {

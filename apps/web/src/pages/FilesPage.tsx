@@ -1,10 +1,12 @@
-import type { File as FileType } from '@myorg/types';
+import type { UploadingFile } from '@myorg/ui';
 import { FileUpload } from '@myorg/ui';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { apiClient } from '../api';
 
 export function FilesPage() {
   const queryClient = useQueryClient();
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['files'],
@@ -12,7 +14,8 @@ export function FilesPage() {
   });
 
   const uploadMutation = useMutation({
-    mutationFn: (file: File) => apiClient.uploadFile(file),
+    mutationFn: (variables: { file: File; onProgress: (progress: number) => void }) =>
+      apiClient.uploadFile(variables.file, variables.onProgress),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['files'] });
     },
@@ -26,8 +29,35 @@ export function FilesPage() {
   });
 
   const handleFileSelect = async (files: File[]) => {
-    for (const file of files) {
-      await uploadMutation.mutateAsync(file);
+    // Add files to uploading state
+    const newUploads = files.map((file) => ({
+      id: Math.random().toString(36).substring(7),
+      file,
+      progress: 0,
+    }));
+
+    setUploadingFiles((prev) => [...prev, ...newUploads]);
+
+    // Process uploads sequentially (or could be parallel)
+    for (const upload of newUploads) {
+      try {
+        await uploadMutation.mutateAsync({
+          file: upload.file,
+          onProgress: (progress) => {
+            setUploadingFiles((prev) =>
+              prev.map((item) => (item.id === upload.id ? { ...item, progress } : item))
+            );
+          },
+        });
+
+        // Remove from uploading list on success
+        setUploadingFiles((prev) => prev.filter((item) => item.id !== upload.id));
+      } catch (error) {
+        // Mark as error
+        setUploadingFiles((prev) =>
+          prev.map((item) => (item.id === upload.id ? { ...item, error: 'Upload failed' } : item))
+        );
+      }
     }
   };
 
@@ -58,9 +88,9 @@ export function FilesPage() {
           multiple
           accept="image/*,application/pdf,text/plain"
           maxSize={10 * 1024 * 1024}
-          disabled={uploadMutation.isPending}
+          disabled={uploadingFiles.some((f) => f.progress < 100 && !f.error)}
+          uploadingFiles={uploadingFiles}
         />
-        {uploadMutation.isPending && <p className="text-sm text-gray-500 mt-2">Uploading...</p>}
       </div>
 
       <div className="bg-white rounded-lg border">
@@ -71,7 +101,7 @@ export function FilesPage() {
           <div className="p-8 text-center text-gray-500">No files uploaded yet.</div>
         ) : (
           <ul className="divide-y">
-            {data?.files?.map((file: FileType) => (
+            {data?.files?.map((file) => (
               <li key={file.id} className="p-4 flex justify-between items-center">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">

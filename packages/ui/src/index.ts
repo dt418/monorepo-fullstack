@@ -10,4 +10,4 @@ export {
   CardFooter,
   type CardProps,
 } from './components/Card';
-export { FileUpload, type FileUploadProps } from './components/FileUpload';
+export { FileUpload, type FileUploadProps, type UploadingFile } from './components/FileUpload';

@@ -1,4 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
+
+export interface UploadingFile {
+  id: string;
+  file: File;
+  progress: number;
+  error?: string;
+}
 
 export interface FileUploadProps {
   onFileSelect: (files: File[]) => void;
@@ -7,6 +14,7 @@ export interface FileUploadProps {
   maxSize?: number; // in bytes
   disabled?: boolean;
   className?: string;
+  uploadingFiles?: UploadingFile[];
 }
 
 /**
@@ -19,9 +27,52 @@ export function FileUpload({
   maxSize = 10 * 1024 * 1024, // 10MB default
   disabled = false,
   className = '',
+  uploadingFiles = [],
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previews, setPreviews] = useState<Record<string, string>>({});
+
+  // Generate previews for uploading files
+  // Keep track of previews in a ref for cleanup
+  const previewsRef = useRef<Record<string, string>>({});
+
+  // Sync previews with uploadingFiles
+  useEffect(() => {
+    const currentIds = new Set(uploadingFiles.map((u) => u.id));
+    const nextPreviews = { ...previewsRef.current };
+    let changed = false;
+
+    // Create previews for new files
+    uploadingFiles.forEach((item) => {
+      if (item.file.type.startsWith('image/') && !nextPreviews[item.id]) {
+        const url = URL.createObjectURL(item.file);
+        nextPreviews[item.id] = url;
+        changed = true;
+      }
+    });
+
+    // Cleanup previews for removed files
+    Object.keys(nextPreviews).forEach((id) => {
+      if (!currentIds.has(id)) {
+        URL.revokeObjectURL(nextPreviews[id]);
+        delete nextPreviews[id];
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      previewsRef.current = nextPreviews;
+      setPreviews(nextPreviews);
+    }
+  }, [uploadingFiles]);
+
+  // Cleanup all previews on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(previewsRef.current).forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   const validateFiles = useCallback(
     (files: FileList | null): File[] => {
@@ -93,7 +144,7 @@ export function FileUpload({
         onDrop={handleDrop}
         className={`
           relative border-2 border-dashed rounded-lg p-8 text-center transition-colors
-          ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
+          ${isDragging ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-gray-400'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
       >
@@ -105,30 +156,58 @@ export function FileUpload({
           disabled={disabled}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
         />
-
-        <svg
-          className="mx-auto h-12 w-12 text-gray-400"
-          stroke="currentColor"
-          fill="none"
-          viewBox="0 0 48 48"
-        >
-          <path
-            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-
-        <p className="mt-4 text-sm text-gray-600">
-          <span className="font-semibold text-blue-600">Click to upload</span> or drag and drop
-        </p>
+        {uploadingFiles && (
+          <div className="grid grid-cols-2 gap-4">
+            {uploadingFiles.map((preview) => (
+              <img
+                key={preview.id}
+                src={URL.createObjectURL(preview.file)}
+                alt="Preview"
+                className="w-full h-24 object-cover rounded-lg"
+              />
+            ))}
+          </div>
+        )}
         <p className="mt-1 text-xs text-gray-500">
           {accept === '*/*' ? 'Any file type' : accept} up to {formatBytes(maxSize)}
         </p>
       </div>
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
+      {/* Upload Progress Section */}
+      {uploadingFiles.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {uploadingFiles.map((item) => (
+            <div key={item.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded border">
+              <div className="w-10 h-10 bg-gray-200 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
+                {previews[item.id] ? (
+                  <img
+                    src={previews[item.id]}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs text-gray-500">FILE</span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between mb-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">{item.file.name}</p>
+                  <span className="text-xs text-gray-700">{Math.round(item.progress)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className={`h-1.5 rounded-full ${item.error ? 'bg-red-500' : 'bg-primary-600'}`}
+                    style={{ width: `${item.progress}%` }}
+                  ></div>
+                </div>
+                {item.error && <p className="text-xs text-red-500 mt-1">{item.error}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
