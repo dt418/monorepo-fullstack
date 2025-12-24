@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { getEnv, createLogger } from '@myorg/utils';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -22,6 +23,13 @@ const app = new Hono();
 const env = getEnv();
 
 // Global middleware
+app.use(
+  '/uploads/*',
+  serveStatic({
+    root: env.UPLOAD_DIR,
+    rewriteRequestPath: (path) => path.replace(/^\/uploads/, ''),
+  })
+);
 app.use('*', honoLogger());
 app.use(
   '*',

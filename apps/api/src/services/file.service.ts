@@ -103,9 +103,12 @@ export class FileService {
 
     // Delete from disk
     try {
-      await fs.unlink(file.path);
+      const env = getEnv();
+      const uploadDir = path.resolve(env.UPLOAD_DIR);
+      const filePath = path.join(uploadDir, file.filename);
+      await fs.unlink(filePath);
     } catch (err) {
-      logger.warn(`Failed to delete file from disk: ${file.path}`);
+      logger.warn(`Failed to delete file from disk: ${file.filename}`);
     }
 
     // Delete from database
