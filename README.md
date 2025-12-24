@@ -33,16 +33,16 @@ Open:
 
 ## 📁 Project Structure
 
-```
+```md
 /
 ├── apps/
-│   ├── api/          # Backend API (Hono + Prisma + Redis)
-│   └── web/          # Frontend (Vite + React + React Query)
+│ ├── api/ # Backend API (Hono + Prisma + Redis)
+│ └── web/ # Frontend (Vite + React + React Query)
 ├── packages/
-│   ├── types/        # Shared TypeScript types & Zod schemas
-│   ├── db/           # Shared Database layer (Prisma)
-│   ├── utils/        # Shared utilities (env, logger)
-│   └── ui/           # Shared UI components (shadcn)
+│ ├── types/ # Shared TypeScript types & Zod schemas
+│ ├── db/ # Shared Database layer (Prisma)
+│ ├── utils/ # Shared utilities (env, logger)
+│ └── ui/ # Shared UI components (shadcn)
 ├── docker-compose.yml
 ├── turbo.json
 ├── pnpm-workspace.yaml
