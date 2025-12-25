@@ -17,10 +17,10 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@hono/node-server": "^1.4.0",
     "@myorg/db": "workspace:*",
     "@myorg/types": "workspace:*",
     "@myorg/utils": "workspace:*",
-    "@hono/node-server": "^1.4.0",
     "bcrypt": "^5.1.1",
     "hono": "^4.0.0",
     "ioredis": "^5.3.2",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/jsonwebtoken": "^9.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.0",
     "@types/uuid": "^9.0.7",

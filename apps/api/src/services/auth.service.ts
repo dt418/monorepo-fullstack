@@ -3,6 +3,7 @@ import { PrismaClient } from '@myorg/db';
 import type { User, LoginInput, RegisterInput, AuthTokens } from '@myorg/types';
 import { getEnv, createLogger } from '@myorg/utils';
 import { compare, hash } from 'bcrypt';
+// eslint-disable-next-line import/default
 import jwt from 'jsonwebtoken';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
