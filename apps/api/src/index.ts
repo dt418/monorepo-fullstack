@@ -11,26 +11,25 @@ import { errorHandler } from './middleware';
 import { authRoutes, taskRoutes, userRoutes, fileRoutes } from './routes';
 import { WebSocketGateway } from './websocket';
 
+/**
+ * Server Configuration & Entry Point
+ */
+
 const logger = createLogger('Server');
-
-// Initialize DI container
-initContainer();
-
-// Create Hono app
-const app = new Hono();
-
-// Get env
 const env = getEnv();
 
-// Global middleware
-app.use(
-  '/uploads/*',
-  serveStatic({
-    root: env.UPLOAD_DIR,
-    rewriteRequestPath: (path) => path.replace(/^\/uploads/, ''),
-  })
-);
+// Initialize Dependency Injection
+initContainer();
+
+// Define Hono instance with strict environment types
+const app = new Hono();
+
+// --- 1. Global Middleware Stack ---
+
+// Logger first to capture every incoming request
 app.use('*', honoLogger());
+
+// CORS next to handle preflight (OPTIONS) requests immediately
 app.use(
   '*',
   cors({
@@ -40,9 +39,15 @@ app.use(
     allowHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use('*', errorHandler);
 
-// Health check
+// --- 2. Error Handling ---
+
+// Global error hook (handles Zod, Prisma, and HTTP exceptions)
+app.onError(errorHandler);
+
+// --- 3. Routes & Business Logic ---
+
+// Health check endpoint
 app.get('/health', (c) => {
   return c.json({
     status: 'ok',
@@ -50,19 +55,21 @@ app.get('/health', (c) => {
   });
 });
 
-// API routes
+// API Route Modules
 app.route('/api/auth', authRoutes);
 app.route('/api/tasks', taskRoutes);
 app.route('/api/users', userRoutes);
 app.route('/api/files', fileRoutes);
 
-// 404 handler
+// --- 4. Fallback Handlers ---
+
+// 404 handler for unmatched routes
 app.notFound((c) => {
-  return c.json({ error: 'Not found' }, 404);
+  return c.json({ success: false, error: 'Route not found' }, 404);
 });
 
-// Create HTTP server
-// Create and start HTTP server
+// --- 5. Server Lifecycle ---
+
 const httpServer = serve(
   {
     fetch: app.fetch,
@@ -75,12 +82,12 @@ const httpServer = serve(
   }
 );
 
-// Initialize WebSocket gateway
+// Initialize WebSocket gateway after HTTP server is active
 WebSocketGateway.initialize(httpServer);
 
-// Graceful shutdown
-const shutdown = async () => {
-  logger.info('Shutting down...');
+// Graceful shutdown handling
+const shutdown = async (): Promise<void> => {
+  logger.info('Shutting down server...');
   httpServer.close();
   process.exit(0);
 };

@@ -6,6 +6,7 @@ import { getEnv, createLogger, formatBytes } from '@myorg/utils';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 import { TOKENS } from '../container';
+import { HTTPError } from '../exceptions/http.error';
 
 const logger = createLogger('FileService');
 
@@ -64,41 +65,100 @@ export class FileService {
   }
 
   /**
-   * Get file by ID
+   * Get file by ID (with admin access)
    */
-  async getById(id: string, userId: string): Promise<FileType | null> {
+  async getById(id: string, userId: string, userRole?: string): Promise<FileType | null> {
+    const whereClause = userRole === 'admin' ? { id } : { id, userId };
+
     const file = await this.prisma.file.findFirst({
-      where: { id, userId },
+      where: whereClause,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
 
     return file as FileType | null;
   }
 
   /**
-   * List user files
+   * Get file content for download (with admin access)
    */
-  async list(userId: string): Promise<{ files: FileType[]; total: number }> {
+  async getFileContent(
+    id: string,
+    userId: string,
+    userRole?: string
+  ): Promise<{ buffer: Buffer; mimeType: string; originalName: string; size: number } | null> {
+    const whereClause = userRole === 'admin' ? { id } : { id, userId };
+
+    const file = await this.prisma.file.findFirst({
+      where: whereClause,
+    });
+
+    if (!file) {
+      return null;
+    }
+
+    try {
+      const buffer = await fs.readFile(file.path);
+      return {
+        buffer,
+        mimeType: file.mimeType,
+        originalName: file.originalName,
+        size: file.size,
+      };
+    } catch (error) {
+      logger.error(`Failed to read file: ${file.path}`, error);
+      throw new HTTPError(500, { message: 'Failed to read file' });
+    }
+  }
+
+  /**
+   * List user files (with admin access to all files)
+   */
+  async list(userId: string, userRole?: string): Promise<{ files: FileType[]; total: number }> {
+    const whereClause = userRole === 'admin' ? {} : { userId };
+
     const [files, total] = await Promise.all([
       this.prisma.file.findMany({
-        where: { userId },
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
+        include:
+          userRole === 'admin'
+            ? {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              }
+            : undefined,
       }),
-      this.prisma.file.count({ where: { userId } }),
+      this.prisma.file.count({ where: whereClause }),
     ]);
 
     return { files: files as FileType[], total };
   }
 
   /**
-   * Delete a file
+   * Delete a file (with admin access)
    */
-  async delete(id: string, userId: string): Promise<void> {
+  async delete(id: string, userId: string, userRole?: string): Promise<void> {
+    const whereClause = userRole === 'admin' ? { id } : { id, userId };
+
     const file = await this.prisma.file.findFirst({
-      where: { id, userId },
+      where: whereClause,
     });
 
     if (!file) {
-      throw new Error('File not found');
+      throw new HTTPError(404, { message: 'File not found', details: { fileId: id } });
     }
 
     // Delete from disk
@@ -116,6 +176,8 @@ export class FileService {
       where: { id },
     });
 
-    logger.info(`File deleted: ${file.filename}`);
+    logger.info(
+      `File deleted: ${file.filename} by ${userRole === 'admin' ? 'admin' : 'user'} ${userId}`
+    );
   }
 }

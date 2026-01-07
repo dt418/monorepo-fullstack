@@ -175,6 +175,35 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  /**
+   * Get protected file download URL
+   */
+  getFileDownloadUrl(id: string): string {
+    return `${API_BASE}/files/${id}/download`;
+  }
+
+  /**
+   * Download file with authentication
+   */
+  async downloadFile(id: string): Promise<Blob> {
+    const headers: HeadersInit = {};
+
+    if (this.accessToken) {
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    const response = await fetch(`${API_BASE}/files/${id}/download`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Download failed' }));
+      throw new Error(error.error || 'Download failed');
+    }
+
+    return response.blob();
+  }
 }
 
 export const apiClient = new ApiClient();

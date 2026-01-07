@@ -1,2 +1,9 @@
-export { ProtectedRoute } from './ProtectedRoute';
+export { FileIcon } from './FileIcon';
+export { FileInfo } from './FileInfo';
+export { FileActions } from './FileActions';
+export { FileItem } from './FileItem';
+export { FileList } from './FileList';
+export { FileUploadSection } from './FileUploadSection';
+export { FilesHeader } from './FilesHeader';
 export { Layout } from './Layout';
+export { ProtectedRoute } from './ProtectedRoute';

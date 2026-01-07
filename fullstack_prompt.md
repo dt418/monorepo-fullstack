@@ -130,15 +130,15 @@ with the following requirements:
 
 ## Final Output Claude Must Produce
 
-1.  Complete monorepo folder structure\
-2.  Every file's full source code\
-3.  oRPC server + client\
-4.  CRUD implementation\
-5.  Auth + RBAC\
-6.  WebSocket realtime layer\
-7.  Redis caching\
-8.  Dockerfiles + Compose\
-9.  CI/CD workflows\
+1. Complete monorepo folder structure\
+2. Every file's full source code\
+3. oRPC server + client\
+4. CRUD implementation\
+5. Auth + RBAC\
+6. WebSocket realtime layer\
+7. Redis caching\
+8. Dockerfiles + Compose\
+9. CI/CD workflows\
 10. Documentation\
 11. Run instructions for Node/Bun/Deno\
 12. Fully self-contained final answer

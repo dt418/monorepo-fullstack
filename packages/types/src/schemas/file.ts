@@ -13,6 +13,18 @@ export const FileSchema = z.object({
 });
 export type File = z.infer<typeof FileSchema>;
 
+// Extended file with user info (for admin views)
+export const FileWithUserSchema = FileSchema.extend({
+  user: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+      email: z.string().email(),
+    })
+    .optional(),
+});
+export type FileWithUser = z.infer<typeof FileWithUserSchema>;
+
 export const FileUploadResponseSchema = z.object({
   file: FileSchema,
   message: z.string(),
@@ -20,7 +32,7 @@ export const FileUploadResponseSchema = z.object({
 export type FileUploadResponse = z.infer<typeof FileUploadResponseSchema>;
 
 export const FileListResponseSchema = z.object({
-  files: z.array(FileSchema),
+  files: z.array(FileWithUserSchema),
   total: z.number(),
 });
 export type FileListResponse = z.infer<typeof FileListResponseSchema>;

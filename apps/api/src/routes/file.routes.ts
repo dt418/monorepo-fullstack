@@ -16,7 +16,7 @@ files.get('/', async (c) => {
   const user = getUser(c);
 
   const fileService = container.resolve(FileService);
-  const result = await fileService.list(user.userId);
+  const result = await fileService.list(user.userId, user.role);
 
   return c.json(result);
 });
@@ -29,13 +29,36 @@ files.get('/:id', async (c) => {
   const id = c.req.param('id');
 
   const fileService = container.resolve(FileService);
-  const file = await fileService.getById(id, user.userId);
+  const file = await fileService.getById(id, user.userId, user.role);
 
   if (!file) {
     return c.json({ error: 'File not found' }, 404);
   }
 
   return c.json(file);
+});
+
+/**
+ * GET /files/:id/download - Download file content (protected)
+ */
+files.get('/:id/download', async (c) => {
+  const user = getUser(c);
+  const id = c.req.param('id');
+
+  const fileService = container.resolve(FileService);
+  const fileData = await fileService.getFileContent(id, user.userId, user.role);
+
+  if (!fileData) {
+    return c.json({ error: 'File not found' }, 404);
+  }
+
+  return new Response(new Uint8Array(fileData.buffer), {
+    headers: {
+      'Content-Type': fileData.mimeType,
+      'Content-Disposition': `inline; filename="${fileData.originalName}"`,
+      'Content-Length': fileData.size.toString(),
+    },
+  });
 });
 
 /**
@@ -82,7 +105,7 @@ files.delete('/:id', async (c) => {
   const id = c.req.param('id');
 
   const fileService = container.resolve(FileService);
-  await fileService.delete(id, user.userId);
+  await fileService.delete(id, user.userId, user.role);
 
   return c.json({ message: 'File deleted' });
 });

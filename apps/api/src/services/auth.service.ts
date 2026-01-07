@@ -9,6 +9,7 @@ import { inject, injectable } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 import { CacheService, CacheKeys } from '../cache';
 import { TOKENS } from '../container';
+import { HTTPError } from '../exceptions/http.error';
 
 const logger = createLogger('AuthService');
 
@@ -48,7 +49,7 @@ export class AuthService {
     });
 
     if (existing) {
-      throw new Error('User already exists');
+      throw new HTTPError(409, { message: 'User already exists', details: { email: input.email } });
     }
 
     // Hash password
@@ -88,13 +89,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new HTTPError(401, { message: 'Invalid credentials' });
     }
 
     // Verify password
     const valid = await compare(input.password, user.passwordHash);
     if (!valid) {
-      throw new Error('Invalid credentials');
+      throw new HTTPError(401, { message: 'Invalid credentials' });
     }
 
     // Generate tokens
@@ -119,7 +120,7 @@ export class AuthService {
     });
 
     if (!stored || stored.expiresAt < new Date()) {
-      throw new Error('Invalid or expired refresh token');
+      throw new HTTPError(401, { message: 'Invalid or expired refresh token' });
     }
 
     // Delete old refresh token

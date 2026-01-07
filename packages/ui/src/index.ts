@@ -11,3 +11,5 @@ export {
   type CardProps,
 } from './components/Card';
 export { FileUpload, type FileUploadProps, type UploadingFile } from './components/FileUpload';
+export { Icon, type IconProps, type IconName } from './components/Icon';
+export { Badge, type BadgeProps } from './components/Badge';

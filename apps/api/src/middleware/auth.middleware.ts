@@ -35,7 +35,7 @@ export async function authMiddleware(c: Context, next: Next) {
  * Get authenticated user from context
  */
 export function getUser(c: Context): JwtPayload {
-  const user = c.get('user');
+  const user = c.get('user') as JwtPayload;
   if (!user) {
     throw new Error('User not found in context');
   }

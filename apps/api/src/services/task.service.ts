@@ -5,6 +5,7 @@ import { createLogger } from '@myorg/utils';
 import { inject, injectable } from 'tsyringe';
 import { CacheService, CacheKeys } from '../cache';
 import { TOKENS } from '../container';
+import { HTTPError } from '../exceptions/http.error';
 
 const logger = createLogger('TaskService');
 
@@ -109,7 +110,7 @@ export class TaskService {
     });
 
     if (task.count === 0) {
-      throw new Error('Task not found');
+      throw new HTTPError(404, { message: 'Task not found', details: { taskId: id } });
     }
 
     // Invalidate caches
@@ -131,7 +132,7 @@ export class TaskService {
     });
 
     if (result.count === 0) {
-      throw new Error('Task not found');
+      throw new HTTPError(404, { message: 'Task not found', details: { taskId: id } });
     }
 
     // Invalidate caches

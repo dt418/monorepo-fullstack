@@ -1,53 +1,76 @@
+import { Prisma } from '@myorg/db';
 import { createLogger } from '@myorg/utils';
-import type { Context, Next } from 'hono';
+import type { Context } from 'hono';
+import { HTTPException } from 'hono/http-exception';
+import type { ContentfulStatusCode, StatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
+import { HTTPError } from '../exceptions/http.error';
 
 const logger = createLogger('ErrorHandler');
 
-/**
- * Global error handler middleware
- */
-export async function errorHandler(c: Context, next: Next) {
-  try {
-    await next();
-  } catch (err) {
-    logger.error('Unhandled error', err);
+export const errorHandler = (err: Error, c: Context) => {
+  // 1. Handle Prisma Known Request Errors (e.g., P2002 Unique Constraint)
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    logger.warn(`Database Error [${err.code}]: ${err.message}`);
 
-    // Handle Zod validation errors
-    if (err instanceof ZodError) {
-      return c.json(
-        {
-          error: 'Validation error',
-          details: err.errors,
-        },
-        400
-      );
-    }
+    const response = {
+      success: false,
+      error: 'Database operation failed',
+      code: err.code,
+      meta: err.meta as Record<string, unknown> | undefined, // Type-safe narrow
+    };
 
-    // Handle known errors
-    if (err instanceof Error) {
-      // Check for common error types
-      if (err.message.includes('not found')) {
-        return c.json({ error: err.message }, 404);
-      }
-      if (err.message.includes('already exists')) {
-        return c.json({ error: err.message }, 409);
-      }
-      if (err.message.includes('Invalid') || err.message.includes('Unauthorized')) {
-        return c.json({ error: err.message }, 401);
-      }
-      if (err.message.includes('Forbidden')) {
-        return c.json({ error: err.message }, 403);
-      }
-
-      // Generic error
-      return c.json(
-        { error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message },
-        500
-      );
-    }
-
-    // Unknown error
-    return c.json({ error: 'Internal server error' }, 500);
+    // Map common Prisma codes to HTTP status codes
+    const status: StatusCode = err.code === 'P2002' ? 409 : 400;
+    return c.json(response, status);
   }
-}
+
+  // 2. Handle Prisma Validation/Initialization Errors
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    logger.error('Database Validation Error', err);
+    return c.json({ success: false, error: 'Invalid data provided to database' }, 400);
+  }
+
+  // 3. Handle Hono HTTPExceptions & Custom HTTPErrors
+  if (err instanceof HTTPException) {
+    const status = err.status;
+    if (status >= 500) {
+      logger.error(`HTTP ${status} error`, err);
+    }
+
+    const responseBody: Record<string, unknown> = {
+      success: false,
+      error: err.message,
+    };
+
+    if (err instanceof HTTPError && err.details) {
+      responseBody.details = err.details;
+    }
+
+    return c.json(responseBody, status as ContentfulStatusCode);
+  }
+
+  // 4. Handle Zod Validation Errors
+  if (err instanceof ZodError) {
+    return c.json(
+      {
+        success: false,
+        error: 'Validation failed',
+        details: err.errors,
+      },
+      400
+    );
+  }
+
+  // 5. Unhandled Fallback
+  logger.error('Unhandled Exception', err);
+  const isProd = process.env.NODE_ENV === 'production';
+
+  return c.json(
+    {
+      success: false,
+      error: isProd ? 'Internal Server Error' : err.message,
+    },
+    500
+  );
+};
