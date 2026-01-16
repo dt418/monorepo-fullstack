@@ -4,6 +4,8 @@ Production-ready full-stack monorepo with Turborepo, React, Node.js, oRPC, Prism
 
 ## 🚀 Quick Start
 
+### Local Development (Recommended)
+
 ```bash
 # Clone and install (Automated Prisma client generation)
 pnpm install
@@ -25,11 +27,44 @@ pnpm db:seed
 pnpm dev
 ```
 
+### Docker Development (Full Containerization)
+
+```bash
+# Setup environment
+cp .env.example .env
+
+# Start everything in Docker with hot reload
+pnpm docker:dev
+
+# Or rebuild and start
+pnpm docker:dev:build
+```
+
+**Features:**
+
+- ✅ Hot reload for apps AND packages
+- ✅ No local Node.js installation needed
+- ✅ Consistent environment across team
+- ✅ Changes reflected in 1-3 seconds
+
+**Verify Configuration:**
+
+```bash
+# Windows
+.\verify-hot-reload.ps1
+
+# Linux/Mac
+./verify-hot-reload.sh
+```
+
+See [README_HOT_RELOAD.md](./README_HOT_RELOAD.md) for complete guide.
+
 Open:
 
-- Frontend: http://localhost:5173
-- API: http://localhost:3001
-- API Health: http://localhost:3001/healthz
+- Frontend: <http://localhost:5173>
+- API: <http://localhost:3001>
+- API Health: <http://localhost:3001/health>
+- Prisma Studio: <http://localhost:5555>
 
 ## 📁 Project Structure
 
@@ -91,10 +126,10 @@ pnpm docker:build  # Build production Docker images
 
 Default seeded users:
 
-| Email             | Password | Role  |
-| ----------------- | -------- | ----- |
-| admin@example.com | admin123 | Admin |
-| user@example.com  | user1234 | User  |
+| Email               | Password | Role  |
+| ------------------- | -------- | ----- |
+| <admin@example.com> | admin123 | Admin |
+| <user@example.com>  | user1234 | User  |
 
 ## 📡 API Endpoints
 
@@ -128,8 +163,8 @@ Default seeded users:
 
 ### Health
 
-- `GET /healthz` - Health check
-- `GET /readyz` - Readiness check
+- `GET /health` - Health check
+- `GET /ready` - Readiness check
 
 ## 🐳 Docker Deployment
 
@@ -158,9 +193,9 @@ pnpm docker:dev:build
 
 Access services at:
 
-- **Web**: http://localhost:5173
-- **API**: http://localhost:3001
-- **Prisma Studio**: http://localhost:5555
+- **Web**: <http://localhost:5173>
+- **API**: <http://localhost:3001>
+- **Prisma Studio**: <http://localhost:5555>
 
 ## ⚙️ CI/CD & Commit Standards
 

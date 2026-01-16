@@ -82,7 +82,7 @@ services:
       - /app/packages/utils/node_modules
       - /app/packages/types/node_modules
       - /app/apps/api/node_modules
-    command: sh -c "pnpm --filter @myorg/db db:generate && pnpm --filter @myorg/api dev"
+    command: sh -c "pnpm --filter @myorg/db db:generate && pnpm --filter @myorg/types build && pnpm --filter @myorg/utils build && pnpm exec turbo run dev --filter=@myorg/api --filter=@myorg/db --filter=@myorg/types --filter=@myorg/utils --parallel"
     environment:
       NODE_ENV: development
       API_PORT: 3001
@@ -120,7 +120,7 @@ services:
       - /app/packages/ui/node_modules
       - /app/packages/utils/node_modules
       - /app/packages/types/node_modules
-    command: pnpm --filter @myorg/web dev --host
+    command: sh -c "pnpm --filter @myorg/ui build && pnpm --filter @myorg/types build && pnpm --filter @myorg/utils build && pnpm exec turbo run dev --filter=@myorg/web --filter=@myorg/ui --filter=@myorg/types --filter=@myorg/utils --parallel"
     environment:
       API_URL: http://api:3001
       WEB_PORT: 5173
